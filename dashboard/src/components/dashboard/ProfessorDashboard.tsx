@@ -1,6 +1,7 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ClassroomsTab } from "./ClassroomsTab"
 import { AllPMPsTab } from "./AllPMPsTab"
 import { MyPMPsTab } from "./MyPMPsTab"
 import { Header } from "../layout/Header"
@@ -23,7 +24,7 @@ interface ProfessorDashboardProps {
 }
 
 export const ProfessorDashboard = ({ professorName, professorId, onLogout }: ProfessorDashboardProps) => {
-  const [activeTab, setActiveTab] = useState("all-pmps")
+  const [activeTab, setActiveTab] = useState("classrooms")
   
   // Mock data - replace with API calls
   const [allPMPs] = useState<PMP[]>([
@@ -58,11 +59,14 @@ export const ProfessorDashboard = ({ professorName, professorId, onLogout }: Pro
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-gray-600 mt-2">Manage your PMPs and view all available cases</p>
+          <p className="text-gray-600 mt-2">Manage your classrooms, PMPs and view all available cases</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsTrigger value="classrooms" className="flex items-center gap-2">
+              Classrooms
+            </TabsTrigger>
             <TabsTrigger value="all-pmps" className="flex items-center gap-2">
               All PMPs
             </TabsTrigger>
@@ -70,6 +74,10 @@ export const ProfessorDashboard = ({ professorName, professorId, onLogout }: Pro
               My PMPs
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="classrooms" className="space-y-6">
+            <ClassroomsTab professorId={professorId} />
+          </TabsContent>
 
           <TabsContent value="all-pmps" className="space-y-6">
             <AllPMPsTab pmps={allPMPs} />

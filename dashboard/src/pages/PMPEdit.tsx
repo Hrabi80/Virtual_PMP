@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Save } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { usePMP, useUpdatePMP } from "@/hooks/api/usePMPs"
 
 interface PMP {
   id: string
@@ -27,33 +27,47 @@ export const PMPEdit = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  // Mock data - in real app, this would come from API
-  const [pmp, setPmp] = useState<PMP>({
-    id: "1",
-    title: "Cardiovascular Assessment",
-    description: "Interactive case study on heart disease diagnosis with comprehensive patient evaluation and diagnostic procedures.",
-    annonceOfTheProblem: "Patient presents with chest pain and shortness of breath",
-    professorName: "Dr. Smith",
-    classroomName: "Medical Students - Year 3",
-    createdBy: "prof1",
-    createdAt: "2024-01-15",
-    isVisible: false // Default to not visible
+  // Using TanStack Query hooks - currently returns mock data
+  const { data: pmp, isLoading, error } = usePMP(id || "")
+  const updatePMPMutation = useUpdatePMP()
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    annonceOfTheProblem: "",
+    classroomName: "",
+    isVisible: false
   })
 
-  const [isLoading, setIsLoading] = useState(false)
+  // Update form data when PMP data loads
+  useState(() => {
+    if (pmp) {
+      setFormData({
+        title: pmp.title,
+        description: pmp.description,
+        annonceOfTheProblem: pmp.annonceOfTheProblem,
+        classroomName: pmp.classroomName,
+        isVisible: pmp.isVisible || false
+      })
+    }
+  })
 
-  const handleInputChange = (field: keyof PMP, value: string | boolean) => {
-    setPmp(prev => ({
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({
       ...prev,
       [field]: value
     }))
   }
 
   const handleSave = async () => {
-    setIsLoading(true)
+    if (!id) return
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Using TanStack Query mutation - currently uses mock data
+      await updatePMPMutation.mutateAsync({
+        id,
+        ...formData
+      })
       
       toast({
         title: "PMP Updated",
@@ -67,9 +81,15 @@ export const PMPEdit = () => {
         description: "Failed to update PMP. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return <div className="flex justify-center py-8">Loading PMP...</div>
+  }
+
+  if (error || !pmp) {
+    return <div className="text-red-600 py-8">Error loading PMP</div>
   }
 
   return (
@@ -92,11 +112,11 @@ export const PMPEdit = () => {
             </div>
             <Button
               onClick={handleSave}
-              disabled={isLoading}
+              disabled={updatePMPMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isLoading ? "Saving..." : "Save Changes"}
+              {updatePMPMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
@@ -111,7 +131,7 @@ export const PMPEdit = () => {
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  value={pmp.title}
+                  value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="Enter PMP title"
                 />
@@ -121,7 +141,7 @@ export const PMPEdit = () => {
                 <Label htmlFor="classroom">Classroom</Label>
                 <Input
                   id="classroom"
-                  value={pmp.classroomName}
+                  value={formData.classroomName}
                   onChange={(e) => handleInputChange('classroomName', e.target.value)}
                   placeholder="Enter classroom name"
                 />
@@ -132,7 +152,7 @@ export const PMPEdit = () => {
               <Label htmlFor="announcement">Problem Announcement</Label>
               <Textarea
                 id="announcement"
-                value={pmp.annonceOfTheProblem}
+                value={formData.annonceOfTheProblem}
                 onChange={(e) => handleInputChange('annonceOfTheProblem', e.target.value)}
                 placeholder="Enter the problem announcement"
                 rows={3}
@@ -143,7 +163,7 @@ export const PMPEdit = () => {
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={pmp.description}
+                value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Enter detailed description"
                 rows={5}
@@ -159,7 +179,7 @@ export const PMPEdit = () => {
               </div>
               <Switch
                 id="visibility"
-                checked={pmp.isVisible !== false}
+                checked={formData.isVisible}
                 onCheckedChange={(checked) => handleInputChange('isVisible', checked)}
               />
             </div>
