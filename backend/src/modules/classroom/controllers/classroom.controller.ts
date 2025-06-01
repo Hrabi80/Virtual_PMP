@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
@@ -45,7 +46,7 @@ export class ClassroomController {
     return this.service.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ summary: 'Update classroom' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, type: Classroom })

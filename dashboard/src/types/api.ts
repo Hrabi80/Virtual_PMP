@@ -45,6 +45,10 @@ export interface CreateClassroomRequest {
   description: string
 }
 
+export interface UpdateClassroomRequest extends Partial<CreateClassroomRequest> {
+  id: string
+}
+
 export interface CreatePMPRequest {
   title: string
   description: string

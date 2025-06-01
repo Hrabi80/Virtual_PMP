@@ -1,7 +1,7 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ClassroomsTab } from "./ClassroomsTab"
+import { ClassroomsTab } from "./ClassroomTab"
 import { AllPMPsTab } from "./AllPMPsTab"
 import { MyPMPsTab } from "./MyPMPsTab"
 import { Header } from "../layout/Header"

@@ -52,4 +52,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient('http://localhost:3000')
+export const apiClient = new ApiClient('http://localhost:3000/')

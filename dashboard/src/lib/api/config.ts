@@ -1,6 +1,6 @@
 
 export const API_CONFIG = {
-  baseURL: 'http://localhost:3000',
+  baseURL: '',
   endpoints: {
     classrooms: '/classrooms',
     pmps: '/pmps',

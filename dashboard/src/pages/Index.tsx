@@ -14,7 +14,7 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loginError, setLoginError] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
-
+  const goDashboard = true;
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true)
     setLoginError("")
@@ -45,7 +45,15 @@ const Index = () => {
     setUser(null)
     setLoginError("")
   }
-
+  if(goDashboard){
+    return (
+      <ProfessorDashboard
+        professorName={"Dr. Bachir"}
+        professorId={"prof1"}
+        onLogout={handleLogout}
+      />
+    )
+  }
   if (!user) {
     return (
       <LoginPage
@@ -56,7 +64,7 @@ const Index = () => {
     )
   }
 
-  if (user.type === "professor") {
+  if (user.type === "professor" ) {
     return (
       <ProfessorDashboard
         professorName={user.name}
