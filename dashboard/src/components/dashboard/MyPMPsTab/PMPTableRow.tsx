@@ -1,51 +1,55 @@
-
-import { Button } from "@/components/ui/button"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Eye, Edit, Trash2, FolderPlus } from "lucide-react"
-import { CategoryList } from "./CategoryList"
-import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Eye, Edit, Trash2, FolderPlus } from "lucide-react";
+import { CategoryList } from "../Category";
+import { useNavigate } from "react-router-dom";
 
 interface Question {
-  id: string
-  questionText: string
-  type: "NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE"
-  response: string
-  medicalPictureUrl?: string
-  score: number
-  questionCategoryId: string
-  createdAt: string
+  id: string;
+  questionText: string;
+  type: "NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE";
+  response: string;
+  medicalPictureUrl?: string;
+  score: number;
+  questionCategoryId: string;
+  createdAt: string;
 }
 
 interface Category {
-  id: string
-  name: string
-  pmpId: string
-  questions: Question[]
+  id: string;
+  name: string;
+  pmpId: string;
+  questions: Question[];
 }
 
 interface PMP {
-  id: string
-  title: string
-  description: string
-  annonceOfTheProblem: string
-  professorName: string
-  classroomName: string
-  createdBy: string
-  createdAt: string
-  isVisible?: boolean
-  categories?: Category[]
+  id: string;
+  title: string;
+  description: string;
+  annonceOfTheProblem: string;
+  professorName: string;
+  classroomName: string;
+  createdBy: string;
+  createdAt: string;
+  isVisible?: boolean;
+  categories?: Category[];
 }
 
 interface PMPTableRowProps {
-  pmp: PMP
-  categories: Category[]
-  onEdit: (pmp: PMP) => void
-  onDelete: (pmp: PMP) => void
-  onAddCategory: (pmp: PMP) => void
-  onManageQuestions: (category: Category) => void
-  onManageCategory: (category: Category) => void
+  pmp: PMP;
+  categories: Category[];
+  onEdit: (pmp: PMP) => void;
+  onDelete: (pmp: PMP) => void;
+  onAddCategory: (pmp: PMP) => void;
+  onManageQuestions: (category: Category) => void;
+  onManageCategory: (category: Category) => void;
 }
 
 export const PMPTableRow = ({
@@ -55,17 +59,17 @@ export const PMPTableRow = ({
   onDelete,
   onAddCategory,
   onManageQuestions,
-  onManageCategory
+  onManageCategory,
 }: PMPTableRowProps) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleView = () => {
-    navigate(`/pmp/${pmp.id}`)
-  }
+    navigate(`/pmp/${pmp.id}`);
+  };
 
   const handleEdit = () => {
-    navigate(`/pmp/${pmp.id}/edit`)
-  }
+    navigate(`/pmp/${pmp.id}/edit`);
+  };
 
   const actionButtons = (
     <div className="flex items-center space-x-2">
@@ -73,8 +77,8 @@ export const PMPTableRow = ({
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation()
-          handleView()
+          e.stopPropagation();
+          handleView();
         }}
         className="h-8 w-8 p-0"
       >
@@ -84,8 +88,8 @@ export const PMPTableRow = ({
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation()
-          handleEdit()
+          e.stopPropagation();
+          handleEdit();
         }}
         className="h-8 w-8 p-0"
       >
@@ -95,8 +99,8 @@ export const PMPTableRow = ({
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation()
-          onAddCategory(pmp)
+          e.stopPropagation();
+          onAddCategory(pmp);
         }}
         className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
       >
@@ -106,15 +110,15 @@ export const PMPTableRow = ({
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation()
-          onDelete(pmp)
+          e.stopPropagation();
+          onDelete(pmp);
         }}
         className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
       >
         <Trash2 className="h-4 w-4" />
       </Button>
     </div>
-  )
+  );
 
   if (categories.length === 0) {
     return (
@@ -122,7 +126,9 @@ export const PMPTableRow = ({
         <TableCell className="font-medium">
           <div>
             <p className="font-semibold text-gray-900">{pmp.title}</p>
-            <p className="text-sm text-gray-500 mt-1">{pmp.annonceOfTheProblem}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {pmp.annonceOfTheProblem}
+            </p>
           </div>
         </TableCell>
         <TableCell>
@@ -138,11 +144,9 @@ export const PMPTableRow = ({
             {new Date(pmp.createdAt).toLocaleDateString()}
           </p>
         </TableCell>
-        <TableCell className="text-right">
-          {actionButtons}
-        </TableCell>
+        <TableCell className="text-right">{actionButtons}</TableCell>
       </TableRow>
-    )
+    );
   }
 
   return (
@@ -154,8 +158,12 @@ export const PMPTableRow = ({
               <div className="flex items-center justify-between w-full mr-4">
                 <div className="flex items-start space-x-4">
                   <div>
-                    <p className="font-semibold text-gray-900 text-left">{pmp.title}</p>
-                    <p className="text-sm text-gray-500 mt-1 text-left">{pmp.annonceOfTheProblem}</p>
+                    <p className="font-semibold text-gray-900 text-left">
+                      {pmp.title}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1 text-left">
+                      {pmp.annonceOfTheProblem}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -170,7 +178,7 @@ export const PMPTableRow = ({
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">{pmp.description}</p>
-                <CategoryList 
+                <CategoryList
                   categories={categories}
                   onManageQuestions={onManageQuestions}
                   onManageCategory={onManageCategory}
@@ -181,5 +189,5 @@ export const PMPTableRow = ({
         </Accordion>
       </TableCell>
     </TableRow>
-  )
-}
+  );
+};

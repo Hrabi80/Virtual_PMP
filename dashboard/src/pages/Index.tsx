@@ -1,7 +1,7 @@
 
 import { useState } from "react"
 import { LoginPage } from "@/components/auth/LoginPage"
-import { ProfessorDashboard } from "@/components/dashboard/ProfessorDashboard"
+import { ProfessorDashboard } from "@/components/dashboard"
 
 interface User {
   id: string

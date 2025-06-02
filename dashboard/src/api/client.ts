@@ -23,11 +23,21 @@ class ApiClient {
     const response = await fetch(url, config)
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+       let errorMessage = `HTTP error! status: ${response.status}`
+      try {
+        const errorData = await response.json()
+        errorMessage = errorData.message || errorMessage
+      } catch {
+        // response body was empty or not JSON, keep default message
+      }
+       throw new Error(errorMessage)
     }
+    const text = await response.text()
+    return text ? JSON.parse(text) : ({} as T)
 
-    return response.json()
   }
+  
+  
 
   async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' })

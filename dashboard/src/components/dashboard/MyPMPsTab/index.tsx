@@ -6,10 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus } from "lucide-react"
 import { CreatePMPDialog } from "./CreatePMPDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
-import { AddCategoryDialog } from "./AddCategoryDialog"
-import { ManageQuestionsDialog } from "./ManageQuestionsDialog"
+import { AddCategoryDialog } from "../Category/AddCategoryDialog"
+import { ManageQuestionsDialog } from "../Question/ManageQuestionsDialog"
 import { PMPTableRow } from "./PMPTableRow"
-import { CategoryDetailDialog } from "./CategoryDetailDialog"
+import { CategoryDetailDialog } from "../Category/CategoryDetailDialog"
 
 interface Question {
   id: string

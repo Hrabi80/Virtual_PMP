@@ -1,7 +1,7 @@
 import { apiClient } from '../client';
 import { createApiUrl } from '../config';
 
-import { Classroom, CreateClassroomRequest, UpdateClassroomRequest } from '../../../types/api';
+import { Classroom, CreateClassroomRequest, UpdateClassroomRequest } from '../../types/api';
 
 export const fetchClassrooms = async (): Promise<Classroom[]> => {
     const url = createApiUrl('classrooms');

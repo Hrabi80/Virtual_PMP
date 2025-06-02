@@ -5,48 +5,43 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { ClassroomDialog } from "./ClassroomDialog"
-import type { Classroom } from "@/types/api"
+import type { Classroom } from "@/types/api/"
 import { useClassrooms, useDeleteClassroom } from "@/lib/hooks/useClassrooms"
 import { toast } from "@/hooks/use-toast"
+import { ConfirmDialog } from "@/components/ui/confirmDialog"
 
 interface ClassroomsTabProps {
   professorId: string
 }
-interface DeleteConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  itemName: string
-}
+
 
 export const ClassroomsTab = ({ professorId }: ClassroomsTabProps) => {
   const [dialogOpen, setDialogOpen] = useState(false)
-  // Using TanStack Query hook - currently returns mock data
-  const { data: classrooms = [], isLoading, error } = useClassrooms()
-  const [selectedClassroom, setSelectedClassroom] =
-    useState<Classroom | null>(null)
-  const deleteClassroomMutation = useDeleteClassroom()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null)
+  const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(null)
 
+  const { data: classrooms = [], isLoading, error } = useClassrooms()
+  
+  const deleteClassroomMutation = useDeleteClassroom()
   const handleEditClassroom = (classroom: Classroom) => {
      setSelectedClassroom(classroom)
      setDialogOpen(true)
   }
+  const handleDeleteClick = (classroom: Classroom) => {
+    setClassroomToDelete(classroom)
+    setDeleteDialogOpen(true)
+  }
   
 
-  const handleDeleteClassroom = (classroom: Classroom) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete "${classroom.name}"?`
-      )
-    ) {
-      return
-    }
+  const confirmDelete = () => {
+    if (!classroomToDelete) return
 
-    deleteClassroomMutation.mutate(classroom.id, {
+    deleteClassroomMutation.mutate(classroomToDelete.id, {
       onSuccess: () => {
         toast({
           title: 'Classroom Deleted',
-          description: `"${classroom.name}" has been removed.`,
+          description: `"${classroomToDelete.name}" has been removed.`,
         })
       },
       onError: (error) => {
@@ -132,7 +127,7 @@ export const ClassroomsTab = ({ professorId }: ClassroomsTabProps) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteClassroom(classroom)}
+                          onClick={() => handleDeleteClick(classroom)}
                           className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                           disabled={deleteClassroomMutation.isPending}
                         >
@@ -159,6 +154,20 @@ export const ClassroomsTab = ({ professorId }: ClassroomsTabProps) => {
         }}
         initialData={selectedClassroom}
       />
+
+       <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open)
+          if (!open) setClassroomToDelete(null)
+        }}
+        title="Delete Classroom"
+        description={`Are you sure you want to delete "${classroomToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+      />
+
     </div>
   )
 }
