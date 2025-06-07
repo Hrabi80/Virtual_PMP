@@ -1,5 +1,4 @@
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -8,20 +7,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react"
-
-interface Classroom {
-  id: string
-  name: string
-  major: string
-}
+import { PMP } from "@/types/api"
+import { usePMPs } from "@/hooks/api/usePMPs"
+import { useClassrooms } from "@/hooks/api/useClassrooms"
 
 interface CreatePMPDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   professorId: string
+  pmp?: PMP | null
 }
 
-export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDialogProps) => {
+export const CreatePMPDialog = ({ open, onOpenChange, professorId, pmp }: CreatePMPDialogProps) => {
+  const { createPMP, updatePMP } = usePMPs();
+  const { data: classrooms, isLoading: isLoadingClassrooms } = useClassrooms();
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     title: "",
@@ -30,12 +29,23 @@ export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDi
     classroomId: ""
   })
 
-  // Mock data - replace with API call
-  const [classrooms] = useState<Classroom[]>([
-    { id: "1", name: "Medical Students - Year 3", major: "Medicine" },
-    { id: "2", name: "Medical Students - Year 4", major: "Medicine" },
-    { id: "3", name: "Nursing Students - Advanced", major: "Nursing" }
-  ])
+  useEffect(() => {
+    if (pmp) {
+      setFormData({
+        title: pmp.title,
+        description: pmp.description,
+        annonceOfTheProblem: pmp.annonceOfTheProblem,
+        classroomId: pmp.classroom.id
+      })
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        annonceOfTheProblem: "",
+        classroomId: ""
+      })
+    }
+  }, [pmp])
 
   const handleNext = () => {
     if (step < 2) {
@@ -50,11 +60,21 @@ export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDi
   }
 
   const handleSubmit = () => {
-    console.log("Creating PMP:", formData)
-    // API call to create PMP
-    // After successful creation, navigate to manage categories
+    const data = {
+      title: formData.title,
+      description: formData.description,
+      annonceOfTheProblem: formData.annonceOfTheProblem,
+      classroomId: formData.classroomId,
+      professorId
+    }
+
+    if (pmp) {
+      updatePMP({ id: pmp.id, data })
+    } else {
+      createPMP(data)
+    }
+
     onOpenChange(false)
-    // Reset form
     setStep(1)
     setFormData({
       title: "",
@@ -71,7 +91,7 @@ export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New PMP</DialogTitle>
+          <DialogTitle>{pmp ? 'Edit PMP' : 'Create New PMP'}</DialogTitle>
           <DialogDescription>
             Step {step} of 2: {step === 1 ? "PMP Details" : "Classroom Selection"}
           </DialogDescription>
@@ -136,12 +156,13 @@ export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDi
                   <Select 
                     value={formData.classroomId} 
                     onValueChange={(value) => setFormData({ ...formData, classroomId: value })}
+                    disabled={isLoadingClassrooms}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a classroom..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {classrooms.map((classroom) => (
+                      {classrooms?.map((classroom) => (
                         <SelectItem key={classroom.id} value={classroom.id}>
                           <div className="flex flex-col">
                             <span>{classroom.name}</span>
@@ -199,7 +220,7 @@ export const CreatePMPDialog = ({ open, onOpenChange, professorId }: CreatePMPDi
                 disabled={!isStep2Valid}
                 className="bg-green-600 hover:bg-green-700"
               >
-                Create PMP
+                {pmp ? 'Update PMP' : 'Create PMP'}
                 <CheckCircle className="h-4 w-4 ml-2" />
               </Button>
             )}

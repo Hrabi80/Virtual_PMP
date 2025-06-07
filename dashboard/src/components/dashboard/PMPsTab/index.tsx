@@ -2,17 +2,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { PMP } from "@/types/api"
 
-interface PMP {
-  id: string
-  title: string
-  description: string
-  annonceOfTheProblem: string
-  professorName: string
-  classroomName: string
-  createdBy: string
-  createdAt: string
-}
+
 
 interface AllPMPsTabProps {
   pmps: PMP[]
@@ -61,10 +53,10 @@ export const AllPMPsTab = ({ pmps }: AllPMPsTabProps) => {
                       </p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{pmp.professorName}</Badge>
+                      {/* <Badge variant="secondary">{pmp.professorName}</Badge> */}
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm text-gray-600">{pmp.classroomName}</p>
+                      {/* <p className="text-sm text-gray-600">{pmp.classroomName}</p> */}
                     </TableCell>
                     <TableCell>
                       <p className="text-sm text-gray-500">

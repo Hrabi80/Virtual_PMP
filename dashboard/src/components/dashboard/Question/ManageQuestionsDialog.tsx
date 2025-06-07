@@ -26,38 +26,14 @@ import { Plus, Edit, Trash2, Link, Award } from "lucide-react";
 import { AddQuestionDialog } from "./AddQuestionDialog";
 import { DeleteConfirmDialog } from "../MyPMPsTab/DeleteConfirmDialog";
 import { ManageBonusDialog } from "../Bonus/ManageBonusDialog";
+import { Question, QuestionCategory } from "@/types/api";
 
-interface QuestionBonus {
-  id: string;
-  questionId: string;
-  linkedQuestionId: string;
-  bonusPoints: number;
-  linkedQuestionText?: string;
-}
 
-interface Question {
-  id: string;
-  questionText: string;
-  type: "NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE";
-  response: string;
-  medicalPictureUrl?: string;
-  score: number;
-  questionCategoryId: string;
-  createdAt: string;
-  bonuses?: QuestionBonus[];
-}
-
-interface Category {
-  id: string;
-  name: string;
-  pmpId: string;
-  questions: Question[];
-}
 
 interface ManageQuestionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category: Category | null;
+  category: QuestionCategory | null;
 }
 
 export const ManageQuestionsDialog = ({
@@ -77,25 +53,7 @@ export const ManageQuestionsDialog = ({
   const allPMPQuestions: Question[] = [
     // Initial Assessment category questions
     ...(category?.questions || []),
-    // Mock questions from other categories for demonstration
-    {
-      id: "q4",
-      questionText: "Do you have any previous heart conditions?",
-      type: "NORMAL_QUESTION",
-      response: "My father had a heart attack when he was 55.",
-      score: 20,
-      questionCategoryId: "cat2",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "q5",
-      questionText: "What medications are you currently taking?",
-      type: "NORMAL_QUESTION",
-      response: "I take aspirin daily and lisinopril for blood pressure.",
-      score: 15,
-      questionCategoryId: "cat2",
-      createdAt: "2024-01-15",
-    },
+    
   ];
 
   const handleAddQuestion = () => {
@@ -139,9 +97,9 @@ export const ManageQuestionsDialog = ({
   };
 
   const getTotalBonusPoints = (question: Question) => {
-    if (!question.bonuses || question.bonuses.length === 0) return 0;
-    return question.bonuses.reduce(
-      (total, bonus) => total + bonus.bonusPoints,
+    if (!question.linkedQuestions || question.linkedQuestions.length === 0) return 0;
+    return question.linkedQuestions.reduce(
+      (total, bonus) => total + 1,
       0
     );
   };
@@ -215,8 +173,8 @@ export const ManageQuestionsDialog = ({
                                     <Badge variant="outline">
                                       {question.score} pts
                                     </Badge>
-                                    {question.bonuses &&
-                                      question.bonuses.length > 0 && (
+                                    {question.linkedQuestions &&
+                                      question.linkedQuestions.length > 0 && (
                                         <Badge
                                           variant="secondary"
                                           className="bg-green-100 text-green-800"
@@ -287,14 +245,14 @@ export const ManageQuestionsDialog = ({
                                 </div>
                               )}
 
-                              {question.bonuses &&
-                                question.bonuses.length > 0 && (
+                              {question.linkedQuestions &&
+                                question.linkedQuestions.length > 0 && (
                                   <div>
                                     <h5 className="text-sm font-medium text-gray-900 mb-2">
-                                      Bonus Links ({question.bonuses.length}):
+                                      Bonus Links ({question.linkedQuestions.length}):
                                     </h5>
                                     <div className="space-y-2">
-                                      {question.bonuses.map((bonus) => (
+                                      {question.linkedQuestions.map((bonus) => (
                                         <div
                                           key={bonus.id}
                                           className="flex items-center justify-between p-2 bg-green-50 rounded-md"
@@ -303,7 +261,7 @@ export const ManageQuestionsDialog = ({
                                             <Link className="h-4 w-4 text-green-600" />
                                             <span className="text-sm text-gray-900">
                                               Links to: "
-                                              {bonus.linkedQuestionText ||
+                                              {bonus.questionText ||
                                                 "Unknown Question"}
                                               "
                                             </span>
@@ -312,7 +270,7 @@ export const ManageQuestionsDialog = ({
                                             variant="outline"
                                             className="text-green-600"
                                           >
-                                            +{bonus.bonusPoints} pts
+                                            +{bonus.score} pts
                                           </Badge>
                                         </div>
                                       ))}

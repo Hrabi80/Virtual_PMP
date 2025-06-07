@@ -20,15 +20,15 @@ export class SeedService {
       },
       {
         name: 'Manager User',
-        email: 'manager@example.com',
+        email: 'dr.bachir@example.com',
         password: 'Manager@123',
-        role: UserRoles.MANAGER,
+        role: UserRoles.PROFESSOR,
       },
       {
         name: 'Member User',
         email: 'member@example.com',
         password: 'Member@123',
-        role: UserRoles.MEMBER,
+        role: UserRoles.STUDENT,
       },
     ];
 

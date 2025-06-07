@@ -6,29 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Question, QuestionCategory } from "@/types/api"
 
-interface Question {
-  id: string
-  questionText: string
-  type: "NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE"
-  response: string
-  medicalPictureUrl?: string
-  score: number
-  questionCategoryId: string
-  createdAt: string
-}
-
-interface Category {
-  id: string
-  name: string
-  pmpId: string
-  questions: Question[]
-}
 
 interface AddQuestionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  category: Category | null
+  category: QuestionCategory | null
   editingQuestion?: Question | null
 }
 

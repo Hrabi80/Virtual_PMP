@@ -20,7 +20,7 @@ import type {
 import {
   useCreateClassroom,
   useUpdateClassroom,
-} from "@/lib/hooks/useClassrooms";
+} from "@/hooks/api/useClassrooms";
 
 interface CreateClassroomDialogProps {
   open: boolean;

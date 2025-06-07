@@ -1,12 +1,23 @@
+import { PMP } from "./pmpApi";
 import { Question } from "./questionApi";
 
-export interface Category {
+
+export interface QuestionCategory {
   id: string;
   name: string;
   pmpId: string;
-  questions: Question[];
+  createdAt: string;
+  updatedAt: string;
+  pmp?: PMP;
+  questions?: Question[];
 }
-export interface CreateCategoryRequest {
+
+export interface CreateQuestionCategoryRequest {
   name: string;
   pmpId: string;
 }
+
+export type UpdateQuestionCategoryRequest =
+  Partial<CreateQuestionCategoryRequest>;
+
+
