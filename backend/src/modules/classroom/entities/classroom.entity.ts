@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { PMP } from 'src/modules/pmp/entities/pmp.entity';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('classrooms')
 export class Classroom extends BaseEntity {
@@ -16,4 +17,6 @@ export class Classroom extends BaseEntity {
 
   @Column({ nullable: true })
   description?: string;
+  @OneToMany(() => PMP, (pmp) => pmp.classroom)
+  pmps: PMP[];
 }

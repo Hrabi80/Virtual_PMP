@@ -3,7 +3,7 @@ export const API_CONFIG = {
   baseURL: '',
   endpoints: {
     classrooms: '/classrooms',
-    pmps: '/pmps',
+    pmps: '/pmp',
     categories: '/categories',
     questions: '/questions',
   },

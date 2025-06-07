@@ -5,17 +5,9 @@ import { ClassroomsTab } from "./ClassroomTab"
 import { AllPMPsTab } from "./PMPsTab"
 import { MyPMPsTab } from "./MyPMPsTab"
 import { Header } from "../layout/Header"
+import { PMP } from "@/types/api"
 
-interface PMP {
-  id: string
-  title: string
-  description: string
-  annonceOfTheProblem: string
-  professorName: string
-  classroomName: string
-  createdBy: string
-  createdAt: string
-}
+
 
 interface ProfessorDashboardProps {
   professorName: string
@@ -27,31 +19,10 @@ export const ProfessorDashboard = ({ professorName, professorId, onLogout }: Pro
   const [activeTab, setActiveTab] = useState("classrooms")
   
   // Mock data - replace with API calls
-  const [allPMPs] = useState<PMP[]>([
-    {
-      id: "1",
-      title: "Cardiovascular Assessment",
-      description: "Interactive case study on heart disease diagnosis",
-      annonceOfTheProblem: "Patient presents with chest pain and shortness of breath",
-      professorName: "Dr. Smith",
-      classroomName: "Medical Students - Year 3",
-      createdBy: "prof1",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: "2",
-      title: "Neurological Examination",
-      description: "Virtual patient with neurological symptoms",
-      annonceOfTheProblem: "Patient shows signs of memory loss and confusion",
-      professorName: "Dr. Johnson",
-      classroomName: "Medical Students - Year 4",
-      createdBy: "prof2",
-      createdAt: "2024-01-10"
-    }
-  ])
+  const [allPMPs] = useState<PMP[]>([])
 
-  const myPMPs = allPMPs.filter(pmp => pmp.createdBy === professorId)
-
+//  const myPMPs = allPMPs.filter(pmp => pmp.createdBy === professorId)
+  const myPMPs = allPMPs
   return (
     <div className="min-h-screen bg-gray-50">
       <Header userType="professor" userName={professorName} onLogout={onLogout} />
@@ -84,7 +55,7 @@ export const ProfessorDashboard = ({ professorName, professorId, onLogout }: Pro
           </TabsContent>
 
           <TabsContent value="my-pmps" className="space-y-6">
-            <MyPMPsTab pmps={myPMPs} professorId={professorId} />
+            <MyPMPsTab professorId={professorId} />
           </TabsContent>
         </Tabs>
       </main>

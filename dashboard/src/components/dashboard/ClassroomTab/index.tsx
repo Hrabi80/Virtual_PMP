@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { ClassroomDialog } from "./ClassroomDialog"
 import type { Classroom } from "@/types/api/"
-import { useClassrooms, useDeleteClassroom } from "@/lib/hooks/useClassrooms"
+import { useClassrooms, useDeleteClassroom } from "@/hooks/api/useClassrooms"
 import { toast } from "@/hooks/use-toast"
 import { ConfirmDialog } from "@/components/ui/confirmDialog"
 

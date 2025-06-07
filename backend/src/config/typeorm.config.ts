@@ -3,11 +3,11 @@ import {
   TypeOrmModuleAsyncOptions,
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
+import { PMP } from 'src/modules/pmp/entities/pmp.entity';
+import { QuestionCategory } from 'src/modules/pmp/entities/question-category.entity';
+import { Question } from 'src/modules/pmp/entities/question.entity';
+import { QuestionBonusLink } from 'src/modules/pmp/entities/question-bonus-link.entity';
 import { Classroom } from 'src/modules/classroom/entities/classroom.entity';
-import { Project } from 'src/modules/project/entities/project.entity';
-import { Task } from 'src/modules/project/entities/task.entity';
-import { Manager } from 'src/modules/user/entities/manager.entity';
-import { User } from 'src/modules/user/entities/user.entity';
 
 export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
@@ -20,7 +20,7 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
       username: process.env.DB_USERNAME,
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
-      entities: [User, Project, Task, Manager, Classroom],
+      entities: [Classroom, PMP, QuestionCategory, Question, QuestionBonusLink],
       migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
       extra: {
         charset: 'utf8mb4_unicode_ci',
@@ -30,6 +30,7 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
     };
   },
 };
+
 export const typeOrmConfig: TypeOrmModuleOptions = {
   type: 'mysql',
   host: process.env.DB_HOST,
@@ -37,7 +38,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
-  entities: [User, Project, Task, Manager, Classroom],
+  entities: [Classroom, PMP, QuestionCategory, Question, QuestionBonusLink],
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   extra: {
     charset: 'utf8mb4_unicode_ci',

@@ -1,4 +1,5 @@
 export * from './classroomApi';
-export * from './PMPApi';
-export * from './categoryApi';
+export * from './pmpApi';
 export * from './questionApi';
+export * from './questionApi';
+export * from './categoryApi'
