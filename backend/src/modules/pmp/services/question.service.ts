@@ -1,19 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Question } from '../entities/question.entity';
 import { CreateQuestionDto } from '../dto/create-question.dto';
 import { UpdateQuestionDto } from '../dto/update-question.dto';
+import { QuestionCategory } from '../entities/question-category.entity';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
+    @InjectRepository(QuestionCategory)
+    private readonly questionCategoryRepository: Repository<QuestionCategory>,
   ) {}
 
   async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
-    const question = this.questionRepository.create(createQuestionDto);
+    const question = this.questionRepository.create({
+      ...createQuestionDto,
+      medicalPictureUrl: createQuestionDto.medicalPictureUrl || null,
+    });
     return await this.questionRepository.save(question);
   }
 
@@ -38,7 +44,10 @@ export class QuestionService {
 
   async update(id: string, updateQuestionDto: UpdateQuestionDto): Promise<Question> {
     const question = await this.findOne(id);
-    Object.assign(question, updateQuestionDto);
+    Object.assign(question, {
+      ...updateQuestionDto,
+      medicalPictureUrl: updateQuestionDto.medicalPictureUrl || null,
+    });
     return await this.questionRepository.save(question);
   }
 
@@ -53,6 +62,25 @@ export class QuestionService {
     return await this.questionRepository.find({
       where: { questionCategoryId: categoryId },
       relations: ['linkedQuestions'],
+    });
+  }
+
+  async getAllQuestionsByPMP(pmpId: string): Promise<Question[]> {
+    // First get all categories for this PMP
+    const categories = await this.questionCategoryRepository.find({
+      where: { pmpId },
+      select: ['id'], // Only select the IDs as we don't need other fields
+    });
+
+    if (!categories.length) {
+      return [];
+    }
+
+    // Get all questions for these categories
+    const categoryIds = categories.map(cat => cat.id);
+    return await this.questionRepository.find({
+      where: { questionCategoryId: In(categoryIds) },
+      relations: ['category', 'linkedQuestions'],
     });
   }
 

@@ -36,22 +36,44 @@ export class QuestionController {
     return this.questionService.create(createQuestionDto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get all questions or filter by category' })
-  @ApiQuery({
+  @Get('pmp/:pmpId')
+  @ApiOperation({ summary: 'Get all questions for a PMP' })
+  @ApiParam({
+    name: 'pmpId',
+    description: 'The ID of the PMP',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of questions for the PMP',
+    type: [Question],
+  })
+  getAllQuestionsByPMP(@Param('pmpId') pmpId: string) {
+    return this.questionService.getAllQuestionsByPMP(pmpId);
+  } 
+
+  @Get(':categoryId')
+  @ApiOperation({ summary: 'Get all questions for a category' })
+  @ApiParam({
     name: 'categoryId',
-    required: false,
-    description: 'Filter questions by category ID',
+    description: 'The ID of the category',
   })
   @ApiResponse({
     status: 200,
     description: 'List of questions',
     type: [Question],
   })
-  findAll(@Query('categoryId') categoryId?: string) {
-    if (categoryId) {
-      return this.questionService.findByCategory(categoryId);
-    }
+  findByCategory(@Param('categoryId') categoryId: string) {
+    return this.questionService.findByCategory(categoryId);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all questions' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all questions',
+    type: [Question],
+  })
+  findAll() {
     return this.questionService.findAll();
   }
 
@@ -154,4 +176,4 @@ export class QuestionController {
   ) {
     return this.questionService.removeLinkedQuestion(id, linkedId);
   }
-} 
+}

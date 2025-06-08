@@ -118,11 +118,11 @@ export const CategoryDetailDialog = ({ open, onOpenChange, category }: CategoryD
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">{category.name}</h3>
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <span>{questions.length} questions</span>
-                  <span>Total Score: {totalScore} points</span>
+                { /* <span>{questions.length} questions</span>
+                  <span>Total Score: {totalScore} points</span> */}
                 </div>
               </div>
-
+{/*
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Questions</CardTitle>
@@ -159,6 +159,7 @@ export const CategoryDetailDialog = ({ open, onOpenChange, category }: CategoryD
                   )}
                 </CardContent>
               </Card>
+              */}
             </>
           )}
         </div>

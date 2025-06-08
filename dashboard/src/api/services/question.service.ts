@@ -14,24 +14,24 @@ interface Filelike {
   type: string;
 }
 
-const isFile = (value: unknown): value is File => {
-  return value instanceof File || (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    typeof (value as Filelike).type === 'string'
-  );
-};
+function isFile(value: any): value is Filelike {
+  return value && typeof value === 'object' && 'type' in value;
+}
 
 export const QuestionService = {
   // Question Management
   getQuestionsByCategory: async (categoryId: string): Promise<Question[]> => {
-    const { data } = await api.get<Question[]>(`/categories/${categoryId}/questions`);
+    const { data } = await api.get<Question[]>(`/questions/${categoryId}`);
     return data;
   },
 
   getAllQuestions: async (): Promise<Question[]> => {
     const { data } = await api.get<Question[]>('/questions');
+    return data;
+  },
+
+  getAllQuestionsByPMP: async (pmpId: string): Promise<Question[]> => {
+    const { data } = await api.get<Question[]>(`/questions/pmp/${pmpId}`);
     return data;
   },
 
@@ -41,39 +41,15 @@ export const QuestionService = {
   },
 
   createQuestion: async (categoryId: string, data: CreateQuestionRequest): Promise<Question> => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === 'medicalPictureFile' && isFile(value)) {
-      formData.append('medicalPicture', value);
-      } else if (value !== undefined && value !== null) {
-      formData.append(key, String(value));
-      }
-    });
-    formData.append('questionCategoryId', categoryId);
-
-    const { data: responseData } = await api.post<Question>(`/questions`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const { data: responseData } = await api.post<Question>(`/questions`, {
+      ...data,
+      questionCategoryId: categoryId
     });
     return responseData;
   },
 
   updateQuestion: async (id: string, data: UpdateQuestionRequest): Promise<Question> => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === 'medicalPictureFile' && isFile(value)) {
-        formData.append('medicalPicture', value);
-      } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-
-    const { data: responseData } = await api.patch<Question>(`/questions/${id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const { data: responseData } = await api.patch<Question>(`/questions/${id}`, data);
     return responseData;
   },
 

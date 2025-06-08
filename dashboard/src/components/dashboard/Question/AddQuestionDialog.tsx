@@ -1,30 +1,57 @@
-
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useEffect, useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Question, QuestionCategory } from "@/types/api"
-
+import { QuestionCategory, QuestionType } from "@/types/api"
+import { useQuestions } from "@/hooks/api/useQuestions"
+import { Plus, X } from "lucide-react"
+import { Card } from "@/components/ui/card"
 
 interface AddQuestionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   category: QuestionCategory | null
-  editingQuestion?: Question | null
+  editingQuestion?: {
+    id: string
+    questionText: string
+    type: QuestionType
+    response: string
+    medicalPictureUrl?: string
+    score: number
+  }
+}
+
+interface LinkedQuestion {
+  targetId: string
+  bonusScore: number
 }
 
 export const AddQuestionDialog = ({ open, onOpenChange, category, editingQuestion }: AddQuestionDialogProps) => {
   const [questionText, setQuestionText] = useState("")
-  const [questionType, setQuestionType] = useState<"NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE">("NORMAL_QUESTION")
+  const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.NORMAL_QUESTION)
   const [response, setResponse] = useState("")
   const [medicalPictureUrl, setMedicalPictureUrl] = useState("")
   const [score, setScore] = useState<number>(10)
-  const [isLoading, setIsLoading] = useState(false)
+  const [linkedQuestions, setLinkedQuestions] = useState<LinkedQuestion[]>([])
+  const [showAddLink, setShowAddLink] = useState(false)
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>("")
+  const [bonusScore, setBonusScore] = useState<number>(5)
+
+  const { 
+    createQuestion, 
+    updateQuestion, 
+    addLinkedQuestion,
+    isCreating, 
+    isUpdating,
+    isLinking,
+    pmpQuestions,
+    isPmpQuestionsLoading 
+  } = useQuestions(category?.id, category?.pmpId)
 
   const isEditing = !!editingQuestion
+  const isLoading = isCreating || isUpdating || isLinking
 
   useEffect(() => {
     if (editingQuestion) {
@@ -40,40 +67,77 @@ export const AddQuestionDialog = ({ open, onOpenChange, category, editingQuestio
 
   const resetForm = () => {
     setQuestionText("")
-    setQuestionType("NORMAL_QUESTION")
+    setQuestionType(QuestionType.NORMAL_QUESTION)
     setResponse("")
     setMedicalPictureUrl("")
     setScore(10)
+    setLinkedQuestions([])
+    setShowAddLink(false)
+    setSelectedQuestionId("")
+    setBonusScore(5)
+  }
+
+  const handleAddLink = () => {
+    if (!selectedQuestionId) return;
+    
+    setLinkedQuestions(prev => [...prev, {
+      targetId: selectedQuestionId,
+      bonusScore: bonusScore
+    }])
+    
+    setSelectedQuestionId("")
+    setBonusScore(5)
+    setShowAddLink(false)
+  }
+
+  const handleRemoveLink = (targetId: string) => {
+    setLinkedQuestions(prev => prev.filter(q => q.targetId !== targetId))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!category || !questionText.trim() || !response.trim()) return
 
-    setIsLoading(true)
-    
     try {
       const questionData = {
         questionText: questionText.trim(),
         type: questionType,
         response: response.trim(),
-        medicalPictureUrl: questionType === "ASK_FOR_MEDICAL_PICTURE" ? medicalPictureUrl : undefined,
+        medicalPictureUrl: questionType === QuestionType.ASK_FOR_MEDICAL_PICTURE ? medicalPictureUrl.trim() : undefined,
         score,
         questionCategoryId: category.id
       }
 
-      if (isEditing) {
-        console.log("Updating question:", { id: editingQuestion?.id, ...questionData })
+      let createdOrUpdatedQuestion;
+      if (isEditing && editingQuestion) {
+        createdOrUpdatedQuestion = await updateQuestion({ 
+          id: editingQuestion.id, 
+          data: {
+            ...questionData,
+            questionCategoryId: category.id
+          }
+        })
       } else {
-        console.log("Creating question:", questionData)
+        createdOrUpdatedQuestion = await createQuestion({
+          ...questionData,
+          questionCategoryId: category.id
+        })
+      }
+
+      // Add linked questions if any
+      if (createdOrUpdatedQuestion) {
+        for (const link of linkedQuestions) {
+          await addLinkedQuestion({
+            sourceId: createdOrUpdatedQuestion.id,
+            targetId: link.targetId
+          })
+        }
       }
       
       resetForm()
       onOpenChange(false)
     } catch (error) {
       console.error("Error saving question:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -84,108 +148,170 @@ export const AddQuestionDialog = ({ open, onOpenChange, category, editingQuestio
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit Question" : "Add New Question"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing 
-              ? `Update the question in "${category?.name}" category.`
-              : `Add a new question to the "${category?.name}" category. Students will be able to ask this question during the PMP session.`
-            }
-          </DialogDescription>
+          <DialogTitle>{isEditing ? "Edit Question" : "Add New Question"}</DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="questionText">Question Text *</Label>
+            <label htmlFor="questionText" className="text-sm font-medium">Question Text</label>
             <Textarea
               id="questionText"
               value={questionText}
               onChange={(e) => setQuestionText(e.target.value)}
-              placeholder="e.g., What brings you to the clinic today?"
-              rows={3}
+              placeholder="Enter the question text..."
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="questionType">Question Type *</Label>
-            <Select value={questionType} onValueChange={(value: "NORMAL_QUESTION" | "ASK_FOR_MEDICAL_PICTURE") => setQuestionType(value)}>
+            <label htmlFor="questionType" className="text-sm font-medium">Question Type</label>
+            <Select value={questionType} onValueChange={(value: QuestionType) => setQuestionType(value)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select question type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="NORMAL_QUESTION">Normal Question</SelectItem>
-                <SelectItem value="ASK_FOR_MEDICAL_PICTURE">Ask for Medical Picture</SelectItem>
+                <SelectItem value={QuestionType.NORMAL_QUESTION}>Normal Question</SelectItem>
+                <SelectItem value={QuestionType.ASK_FOR_MEDICAL_PICTURE}>Ask for Medical Picture</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {questionType === "ASK_FOR_MEDICAL_PICTURE" && (
-            <div className="space-y-2">
-              <Label htmlFor="medicalPictureUrl">Medical Picture URL</Label>
-              <Input
-                id="medicalPictureUrl"
-                value={medicalPictureUrl}
-                onChange={(e) => setMedicalPictureUrl(e.target.value)}
-                placeholder="e.g., /images/chest-diagram.jpg"
-                type="url"
-              />
-              <p className="text-sm text-gray-500">
-                Provide a URL to the medical image that will be shown with this question.
-              </p>
-            </div>
-          )}
-          
           <div className="space-y-2">
-            <Label htmlFor="response">Virtual Patient Response *</Label>
+            <label htmlFor="response" className="text-sm font-medium">Response</label>
             <Textarea
               id="response"
               value={response}
               onChange={(e) => setResponse(e.target.value)}
-              placeholder="e.g., I've been having chest pain for the past week..."
-              rows={4}
+              placeholder="Enter the response..."
               required
             />
-            <p className="text-sm text-gray-500">
-              This is how the virtual patient will respond when students ask this question.
-            </p>
           </div>
 
+          {questionType === QuestionType.ASK_FOR_MEDICAL_PICTURE && (
+            <div className="space-y-2">
+              <label htmlFor="medicalPictureUrl" className="text-sm font-medium">Medical Picture URL</label>
+              <Input
+                id="medicalPictureUrl"
+                type="url"
+                value={medicalPictureUrl}
+                onChange={(e) => setMedicalPictureUrl(e.target.value)}
+                placeholder="Enter the medical picture URL..."
+              />
+            </div>
+          )}
+          
           <div className="space-y-2">
-            <Label htmlFor="score">Score Points *</Label>
+            <label htmlFor="score" className="text-sm font-medium">Score</label>
             <Input
               id="score"
               type="number"
-              value={score}
-              onChange={(e) => setScore(Number(e.target.value))}
               min="0"
-              max="100"
               step="0.5"
+              value={score}
+              onChange={(e) => setScore(parseFloat(e.target.value))}
               required
             />
-            <p className="text-sm text-gray-500">
-              Points awarded to students for asking this question (0-100).
-            </p>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Linked Questions</label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAddLink(true)}
+                disabled={showAddLink || isLoading}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Link
+              </Button>
+            </div>
+
+            {showAddLink && (
+              <Card className="p-4 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Question</label>
+                  <Select value={selectedQuestionId} onValueChange={setSelectedQuestionId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a question to link" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {pmpQuestions?.map(q => (
+                        <SelectItem key={q.id} value={q.id}>
+                          {q.questionText}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Bonus Score</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={bonusScore}
+                    onChange={(e) => setBonusScore(parseFloat(e.target.value))}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowAddLink(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="button" 
+                    size="sm"
+                    onClick={handleAddLink}
+                    disabled={!selectedQuestionId}
+                  >
+                    Add Link
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {linkedQuestions.length > 0 && (
+              <div className="space-y-2">
+                {linkedQuestions.map(link => {
+                  const question = pmpQuestions?.find(q => q.id === link.targetId);
+                  return (
+                    <Card key={link.targetId} className="p-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{question?.questionText}</p>
+                        <p className="text-sm text-gray-500">Bonus Score: {link.bonusScore}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveLink(link.targetId)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isLoading || !questionText.trim() || !response.trim()}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isLoading 
-                ? (isEditing ? "Updating..." : "Creating...") 
-                : (isEditing ? "Update Question" : "Create Question")
-              }
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : isEditing ? "Update" : "Create"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
