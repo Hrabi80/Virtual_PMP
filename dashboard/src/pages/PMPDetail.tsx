@@ -41,6 +41,7 @@ export const PMPDetail: React.FC = () => {
     isLoading: isCategoriesLoading,
   } = useCategories(id!);
 
+  
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null);
   const [isManageQuestionsOpen, setIsManageQuestionsOpen] = useState(false);
@@ -135,9 +136,9 @@ export const PMPDetail: React.FC = () => {
                           {category.name}
                         </h3>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="secondary">
+                          {/*   <Badge variant="secondary">
                             {category.questions?.length || 0} questions
-                          </Badge>
+                          </Badge> */}
                           <Button
                             variant="ghost"
                             size="sm"

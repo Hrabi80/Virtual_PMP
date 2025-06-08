@@ -7,14 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -25,8 +18,8 @@ import {
 import { Plus, Edit, Trash2, Link, Award } from "lucide-react";
 import { AddQuestionDialog } from "./AddQuestionDialog";
 import { DeleteConfirmDialog } from "../MyPMPsTab/DeleteConfirmDialog";
-import { ManageBonusDialog } from "../Bonus/ManageBonusDialog";
 import { Question, QuestionCategory } from "@/types/api";
+import { useQuestions } from "@/hooks/api/useQuestions";
 
 
 
@@ -49,12 +42,9 @@ export const ManageQuestionsDialog = ({
   );
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  // Mock data for all questions across categories (in real app, this would come from API)
-  const allPMPQuestions: Question[] = [
-    // Initial Assessment category questions
-    ...(category?.questions || []),
-    
-  ];
+ 
+  const { questions: QuestionsInCategory, isLoading: isLoadingQuestions } = useQuestions(category?.id || "");
+  console.log("🚀 ~ questions:", QuestionsInCategory)
 
   const handleAddQuestion = () => {
     setEditingQuestion(null);
@@ -121,7 +111,7 @@ export const ManageQuestionsDialog = ({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-600">
-                    {category?.questions.length || 0} questions in this category
+                    {(Array.isArray(QuestionsInCategory) && QuestionsInCategory.length )|| 0} questions in this category
                   </p>
                 </div>
                 <Button
@@ -133,7 +123,7 @@ export const ManageQuestionsDialog = ({
                 </Button>
               </div>
 
-              {!category?.questions || category.questions.length === 0 ? (
+              {!isLoadingQuestions && ((Array.isArray(QuestionsInCategory) && QuestionsInCategory.length === 0)) ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
                   <div className="space-y-3">
                     <div className="p-3 bg-gray-100 rounded-full w-fit mx-auto">
@@ -154,7 +144,7 @@ export const ManageQuestionsDialog = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {category.questions.map((question) => (
+                  {Array.isArray(QuestionsInCategory) && QuestionsInCategory.map((question) => (
                     <div
                       key={question.id}
                       className="border rounded-lg bg-white"
@@ -316,12 +306,12 @@ export const ManageQuestionsDialog = ({
         editingQuestion={editingQuestion}
       />
 
-      <ManageBonusDialog
+     {/* <ManageBonusDialog
         open={manageBonusDialogOpen}
         onOpenChange={setManageBonusDialogOpen}
         question={selectedQuestion}
-        allQuestions={allPMPQuestions}
-      />
+        allQuestions={QuestionsInCategory}
+      /> */}
 
       <DeleteConfirmDialog
         open={deleteDialogOpen}
